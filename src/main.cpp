@@ -1,10 +1,22 @@
+#include <cctype>
 #include <iostream>
 #include <string>
 using namespace std;
 
+bool check_pattern(const string &input, const string &pattern) {
+  if (pattern == "\\d") {
+    for (char ch : input) {
+      return isdigit(ch);
+    }
+    return false;
+  } else {
+    return input.find(pattern) != string::npos;
+  }
+}
+
 bool match_pattern(const string &input_line, const string &pattern) {
-  if (pattern.length() == 1) {
-    return input_line.find(pattern) != string::npos;
+  if (pattern.length() >= 1) {
+    return check_pattern(input_line, pattern);
   } else {
     throw runtime_error("Unhandled pattern " + pattern);
   }
@@ -28,18 +40,18 @@ int main(int argc, char *argv[]) {
     cerr << "Expected first argument to be '-E'" << endl;
     return 1;
   }
- 
-   string input_line;
-   getline(cin, input_line);
-  
-   try {
-       if (match_pattern(input_line, pattern)) {
-           return 0;
-       } else {
-           return 1;
-       }
-   } catch (const runtime_error& e) {
-       cerr << e.what() << endl;
-       return 1;
-   }
+
+  string input_line;
+  getline(cin, input_line);
+
+  try {
+    if (match_pattern(input_line, pattern)) {
+      return 0;
+    } else {
+      return 1;
+    }
+  } catch (const runtime_error &e) {
+    cerr << e.what() << endl;
+    return 1;
+  }
 }
