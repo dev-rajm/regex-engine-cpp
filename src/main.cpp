@@ -3,14 +3,12 @@
 #include <string>
 using namespace std;
 
-bool check_pattern(const string &input, const string &pattern) {
+bool check_pattern(const string &input_line, const string &pattern) {
   if (pattern == "\\d") {
-    for (char ch : input) {
-      return isdigit(ch);
-    }
-    return false;
+    // match digits
+    return input_line.find_first_of("0123456789") != string::npos;
   } else {
-    return input.find(pattern) != string::npos;
+    return input_line.find(pattern) != string::npos;
   }
 }
 
