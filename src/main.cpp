@@ -1,5 +1,4 @@
-#include <cctype>
-#include <cmath>
+#include <algorithm>
 #include <iostream>
 #include <string>
 using namespace std;
@@ -7,15 +6,12 @@ using namespace std;
 bool check_pattern(const string &input_line, const string &pattern) {
   if (pattern == "\\d") {
     // match digits
-    return input_line.find_first_of("0123456789") != string::npos;
+    return any_of(input_line.begin(), input_line.end(),
+                  [](unsigned char ch) { return isdigit(ch); });
   } else if (pattern == "\\w") {
     // match alphanumeric and underscore
-    for (char ch : input_line) {
-      if (isalnum(ch) || ch == '_') {
-        return true;
-      }
-    }
-    return false;
+    return any_of(input_line.begin(), input_line.end(),
+                  [](unsigned char ch) { return isalnum(ch) || ch == '_'; });
   } else {
     return input_line.find(pattern) != string::npos;
   }
