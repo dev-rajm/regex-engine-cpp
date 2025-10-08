@@ -3,8 +3,10 @@
 #include <string>
 using namespace std;
 
-bool check_pattern(const string &input_line, const string &pattern) {
-  if (pattern == "\\d") {
+bool match_pattern(const string &input_line, const string &pattern) {
+  if (pattern.size() == 1) {
+    return input_line.find(pattern) != string::npos;
+  } else if (pattern == "\\d") {
     // match digits
     return any_of(input_line.begin(), input_line.end(),
                   [](unsigned char ch) { return isdigit(ch); });
@@ -12,14 +14,6 @@ bool check_pattern(const string &input_line, const string &pattern) {
     // match alphanumeric and underscore
     return any_of(input_line.begin(), input_line.end(),
                   [](unsigned char ch) { return isalnum(ch) || ch == '_'; });
-  } else {
-    return input_line.find(pattern) != string::npos;
-  }
-}
-
-bool match_pattern(const string &input_line, const string &pattern) {
-  if (pattern.length() >= 1) {
-    return check_pattern(input_line, pattern);
   } else {
     throw runtime_error("Unhandled pattern " + pattern);
   }
