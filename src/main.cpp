@@ -1,4 +1,5 @@
 #include <cctype>
+#include <cmath>
 #include <iostream>
 #include <string>
 using namespace std;
@@ -7,6 +8,14 @@ bool check_pattern(const string &input_line, const string &pattern) {
   if (pattern == "\\d") {
     // match digits
     return input_line.find_first_of("0123456789") != string::npos;
+  } else if (pattern == "\\w") {
+    // match alphanumeric and underscore
+    for (char ch : input_line) {
+      if (isalnum(ch) || ch == '_') {
+        return true;
+      }
+    }
+    return false;
   } else {
     return input_line.find(pattern) != string::npos;
   }
