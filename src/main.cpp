@@ -11,9 +11,13 @@ bool match_pattern(const string &input_line, const string &pattern) {
     return any_of(input_line.begin(), input_line.end(),
                   [](unsigned char ch) { return isdigit(ch); });
   } else if (pattern == "\\w") {
-    // match alphanumeric and underscore
+    // match alphanumeric and underscore character
     return any_of(input_line.begin(), input_line.end(),
                   [](unsigned char ch) { return isalnum(ch) || ch == '_'; });
+  } else if (pattern.front('[') && pattern.back(']')) {
+    // match positive character group
+    return input_line.find_first_of(pattern.substr(1, pattern.size() - 2)) !=
+           string::npos;
   } else {
     throw runtime_error("Unhandled pattern " + pattern);
   }
