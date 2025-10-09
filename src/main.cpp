@@ -14,8 +14,12 @@ bool match_pattern(const string &input_line, const string &pattern) {
     // match alphanumeric and underscore character
     return any_of(input_line.begin(), input_line.end(),
                   [](unsigned char ch) { return isalnum(ch) || ch == '_'; });
+  } else if (pattern.starts_with("[^") && pattern.ends_with(']')) {
+    // match negative character groups
+    return input_line.find_first_not_of(
+               pattern.substr(2, pattern.size() - 3)) != string::npos;
   } else if (pattern.front() == '[' && pattern.back() == ']') {
-    // match positive character group
+    // match positive character groups
     return input_line.find_first_of(pattern.substr(1, pattern.size() - 2)) !=
            string::npos;
   } else {
