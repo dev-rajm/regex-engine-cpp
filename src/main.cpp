@@ -1,30 +1,82 @@
 #include <algorithm>
 #include <iostream>
 #include <string>
+#include <vector>
 using namespace std;
 
-bool match_pattern(const string &input_line, const string &pattern) {
-  if (pattern.size() == 1) {
-    return input_line.find(pattern) != string::npos;
-  } else if (pattern == "\\d") {
-    // match digits
-    return any_of(input_line.begin(), input_line.end(),
-                  [](unsigned char ch) { return isdigit(ch); });
-  } else if (pattern == "\\w") {
-    // match alphanumeric and underscore character
-    return any_of(input_line.begin(), input_line.end(),
-                  [](unsigned char ch) { return isalnum(ch) || ch == '_'; });
-  } else if (pattern.starts_with("[^") && pattern.ends_with(']')) {
-    // match negative character groups
-    return input_line.find_first_not_of(
-               pattern.substr(2, pattern.size() - 3)) != string::npos;
-  } else if (pattern.front() == '[' && pattern.back() == ']') {
-    // match positive character groups
-    return input_line.find_first_of(pattern.substr(1, pattern.size() - 2)) !=
-           string::npos;
-  } else {
-    throw runtime_error("Unhandled pattern " + pattern);
+vector<string> tokenize_pattern(const string &pattern) {
+  vector<string> tokens;
+  for (size_t i = 0; i < pattern.size();) {
+    if (pattern[i] == '\\') {
+      if (i + 1 < pattern.size()) {
+        tokens.push_back(pattern.substr(i, 2));
+        i += 2;
+      } else {
+        throw runtime_error("Invalid escape sequence in pattern");
+      }
+    } else if (pattern[i] == '[') {
+      size_t end = pattern.find(']', i);
+      if (end != string::npos) {
+        tokens.push_back(pattern.substr(i, end - i + 1));
+        i = end + 1;
+      } else {
+        throw runtime_error("Unclosed [ in pattern");
+      }
+    } else {
+      size_t j = i;
+      while (j < pattern.size() && pattern[j] != '\\' && pattern[j] != '[')
+        j++;
+      tokens.push_back(pattern.substr(i, j - i));
+      i = j;
+    }
   }
+  return tokens;
+}
+
+bool match_token(const string &input, size_t pos, const string &token) {
+  if (token == "\\d")
+    return pos < input.size() && isdigit(input[pos]);
+  else if (token == "\\w")
+    return pos < input.size() && (isalnum(input[pos]) || input[pos] == '_');
+  else if (token.starts_with("[^") && token.ends_with(']')) {
+    string neg_chars = token.substr(2, token.size() - 3);
+    return pos < input.size() && neg_chars.find(input[pos]) == string::npos;
+  } else if (token.front() == '[' && token.back() == ']') {
+    string chars = token.substr(1, token.size() - 2);
+    return pos < input.size() && chars.find(input[pos]) != string::npos;
+  } else {
+    return input.compare(pos, token.size(), token) == 0;
+  }
+}
+
+bool match_pattern(const string &input_line, const string &pattern) {
+  auto tokens = tokenize_pattern(pattern);
+
+  for (size_t start = 0; start < input_line.size(); ++start) {
+    size_t pos = start;
+    bool matched = true;
+
+    for (const auto &token : tokens) {
+      if (token == "\\d" || token == "\\w" || token.front() == '[') {
+        if (!match_token(input_line, pos, token)) {
+          matched = false;
+          break;
+        }
+        pos += 1;
+      } else {
+        if (!match_token(input_line, pos, token)) {
+          matched = false;
+          break;
+        }
+        pos += token.size();
+      }
+    }
+
+    if (matched && pos <= input_line.size()) {
+      return true;
+    }
+  }
+  return false;
 }
 
 int main(int argc, char *argv[]) {
