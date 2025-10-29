@@ -1,4 +1,3 @@
-#include <algorithm>
 #include <iostream>
 #include <string>
 #include <vector>
@@ -6,7 +5,16 @@ using namespace std;
 
 vector<string> tokenize_pattern(const string &pattern) {
   vector<string> tokens;
-  for (size_t i = 0; i < pattern.size();) {
+
+  size_t i = 0;
+
+  // handle ^ at beginning
+  if (!pattern.empty() && pattern[0] == '^') {
+    tokens.push_back("^");
+    i = 1;
+  }
+
+  for (; i < pattern.size();) {
     if (pattern[i] == '\\') {
       if (i + 1 < pattern.size()) {
         tokens.push_back(pattern.substr(i, 2));
@@ -52,11 +60,24 @@ bool match_token(const string &input, size_t pos, const string &token) {
 bool match_pattern(const string &input_line, const string &pattern) {
   auto tokens = tokenize_pattern(pattern);
 
-  for (size_t start = 0; start < input_line.size(); ++start) {
+  bool anchored_start = false;
+  size_t token_start_index = 0;
+
+  // chech if pattern begins with ^
+  if(!tokens.empty() && tokens[0] == "^") {
+    anchored_start = true;
+    token_start_index = 1;
+  }
+
+  size_t start_limit = anchored_start ? 1 : input_line.size();
+
+  for (size_t start = 0; start < start_limit; ++start) {
     size_t pos = start;
     bool matched = true;
 
-    for (const auto &token : tokens) {
+    for (size_t ti = token_start_index; ti < tokens.size(); ++ti) {
+      const auto &token = tokens[ti];
+
       if (token == "\\d" || token == "\\w" || token.front() == '[') {
         if (!match_token(input_line, pos, token)) {
           matched = false;
